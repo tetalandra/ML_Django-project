@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Log in — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="auth">
+  <div class="panel panel--narrow auth-card">
+    <p class="hero-kicker auth-kicker">Group access</p>
+    <h1>Log in</h1>
+    <p class="muted">Your group decides which sections you can open: <strong>Clinicians</strong> see patients &amp; notes, <strong>Operations</strong> see doctors &amp; departments.</p>
+
+    {% if form.errors %}
+    <div class="flash flash--error auth-error" role="alert">
+      <span>Wrong username or password. Try again.</span>
+    </div>
+    {% endif %}
+
+    <form method="post" class="entity-form" autocomplete="off">
+      {% csrf_token %}
+      <div class="form-row">
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+      </div>
+      <div class="form-row">
+        <label for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary">Log in</button>
+        <a class="btn btn--ghost" href="{% url 'core:dashboard' %}">Back</a>
+      </div>
+    </form>
+
+    <p class="muted auth-hint">Demo accounts (after <code>python manage.py setup_groups --demo-users</code>):
+      <code>clinician</code> / <code>clin12345!</code> and <code>opsdesk</code> / <code>ops12345!</code></p>
+  </div>
+</section>
+{% endblock %}

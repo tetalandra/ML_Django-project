@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load texttools_extras %}
+{% block title %}Appointments — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Appointments</h1>
+    <p class="muted">Search by patient, doctor, reason or status.</p>
+  </div>
+  <a class="btn btn--primary" href="{% url 'records:appointment_create' %}">+ Book appointment</a>
+</section>
+
+<section class="panel">
+  <form method="get" class="search-bar">
+    <input type="search" name="q" value="{{ q }}" class="field" placeholder="Search appointments…">
+    <button class="btn" type="submit">Search</button>
+    {% if q %}<a class="btn btn--ghost" href="{% url 'records:appointment_list' %}">Clear</a>{% endif %}
+  </form>
+
+  {% if appointments %}
+  <table class="table">
+    <thead>
+      <tr><th>When</th><th>Patient</th><th>Doctor</th><th>Status</th><th>Reason</th><th class="col-actions">Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for a in appointments %}
+      <tr>
+        <td><a href="{% url 'records:appointment_detail' a.pk %}">{{ a.scheduled_at|date:"D d M, H:i" }}</a>{% if a.is_upcoming %} <span class="badge badge--live">upcoming</span>{% endif %}</td>
+        <td>{{ a.patient.full_name }}</td>
+        <td>Dr. {{ a.doctor.last_name }}</td>
+        <td><span class="badge badge--{{ a.status }}">{{ a.get_status_display }}</span></td>
+        <td>{{ a.reason|snippet:45 }}</td>
+        <td class="col-actions">
+          <a class="btn btn--sm" href="{% url 'records:appointment_update' a.pk %}">Edit</a>
+          <a class="btn btn--sm btn--danger" href="{% url 'records:appointment_delete' a.pk %}" data-confirm="Delete this appointment?">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% include "partials/_pagination.html" %}
+  {% else %}
+  <p class="empty">No appointments found. <a href="{% url 'records:appointment_create' %}">Book one</a>.</p>
+  {% endif %}
+</section>
+{% endblock %}

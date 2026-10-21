@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load texttools_extras %}
+{% block title %}{{ patient.full_name }} — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>{{ patient.full_name }}
+      <span class="badge">{{ patient.blood_group|default:"no blood group" }}</span>
+      {% if patient.last_name|is_palindrome %}<span class="badge badge--fun">palindrome surname</span>{% endif %}
+    </h1>
+    <p class="muted">{{ patient.age }} years old · {{ patient.get_gender_display }} · registered {{ patient.created_at|date:"d M Y" }}</p>
+  </div>
+  <div class="btn-row">
+    <a class="btn btn--primary" href="{% url 'records:patient_update' patient.pk %}">Edit</a>
+    <a class="btn btn--danger" href="{% url 'records:patient_delete' patient.pk %}">Delete</a>
+    <a class="btn" href="{% url 'records:appointment_create' %}?patient={{ patient.pk }}">Book visit</a>
+  </div>
+</section>
+
+<div class="grid-2">
+  <section class="panel">
+    <header class="panel-head"><h2>Details</h2></header>
+    <dl class="detail-grid">
+      <dt>Email</dt><dd>{{ patient.email|default:"—" }}</dd>
+      <dt>Phone</dt><dd>{{ patient.phone|default:"—" }}</dd>
+      <dt>Address</dt><dd>{{ patient.address|default:"—" }}</dd>
+      <dt>Date of birth</dt><dd>{{ patient.date_of_birth|date:"d M Y" }}</dd>
+      <dt>Allergies</dt><dd>{{ patient.allergies|default:"None recorded" }}</dd>
+      <dt>History</dt><dd>{{ patient.medical_history|default:"—" }}</dd>
+    </dl>
+  </section>
+
+  {% if is_inpatient %}
+  <section class="panel panel--accent">
+    <header class="panel-head">
+      <h2>Admission</h2>
+      {% if inpatient.is_currently_admitted %}<span class="badge badge--live">currently admitted</span>{% else %}<span class="badge">discharged</span>{% endif %}
+    </header>
+    <dl class="detail-grid">
+      <dt>Ward / room</dt><dd>{{ inpatient.ward|default:"—" }} · {{ inpatient.room_number|default:"—" }}</dd>
+      <dt>Admitted</dt><dd>{{ inpatient.admitted_on|date:"d M Y" }}</dd>
+      <dt>Discharged</dt><dd>{{ inpatient.discharged_on|date:"d M Y"|default:"still in" }}</dd>
+      <dt>Length of stay</dt><dd>{{ inpatient.length_of_stay }} day{{ inpatient.length_of_stay|pluralize }}</dd>
+      <dt>Estimated bill</dt><dd>{{ inpatient.estimated_bill|floatformat:2 }}</dd>
+    </dl>
+  </section>
+  {% else %}
+  <section class="panel">
+    <header class="panel-head"><h2>Admission</h2></header>
+    <p class="empty">Outpatient — not currently admitted.</p>
+  </section>
+  {% endif %}
+</div>
+
+<section class="panel">
+  <header class="panel-head">
+    <h2>Appointments</h2>
+    <a href="{% url 'records:appointment_create' %}?patient={{ patient.pk }}">+ Book</a>
+  </header>
+  {% if appointments %}
+  <table class="table">
+    <thead><tr><th>When</th><th>Doctor</th><th>Status</th><th>Reason</th></tr></thead>
+    <tbody>
+      {% for a in appointments %}
+      <tr>
+        <td><a href="{% url 'records:appointment_detail' a.pk %}">{{ a.scheduled_at|date:"D d M, H:i" }}</a></td>
+        <td>Dr. {{ a.doctor.full_name }}</td>
+        <td><span class="badge badge--{{ a.status }}">{{ a.get_status_display }}</span></td>
+        <td>{{ a.reason|snippet:50 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="empty">No appointments yet.</p>{% endif %}
+</section>
+
+<section class="panel">
+  <header class="panel-head">
+    <h2>Clinical notes <small class="badge">texttools counts</small></h2>
+  </header>
+
+  {% if notes %}
+  <ul class="note-list">
+    {% for note in notes %}
+    <li class="note">
+      <div class="note-head">
+        <strong>{{ note.title }}</strong>
+        <span class="muted">{{ note.created_at|date:"d M Y, H:i" }} · by {{ note.doctor.full_name|default:"—" }}</span>
+      </div>
+      <p>{{ note.body|smart_title }}</p>
+      <footer class="note-meta">
+        <span class="badge">{{ note.word_count }} words</span>
+        <span class="badge">{{ note.character_count }} chars</span>
+        {% if note.title_is_palindrome %}<span class="badge badge--fun">title is a palindrome</span>{% endif %}
+      </footer>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="empty">No notes yet.</p>{% endif %}
+
+  <h3>Add a note</h3>
+  <form method="post" action="{% url 'core:add_note' patient.pk %}" class="entity-form">
+    {% csrf_token %}
+    {% for field in note_form %}
+    <div class="form-row{% if field.errors %} has-error{% endif %}">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% for error in field.errors %}<small class="error">{{ error }}</small>{% endfor %}
+    </div>
+    {% endfor %}
+    <div class="form-actions"><button class="btn btn--primary" type="submit">Save note</button></div>
+  </form>
+</section>
+{% endblock %}
