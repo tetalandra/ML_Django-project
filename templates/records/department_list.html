@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Departments — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Departments</h1>
+    <p class="muted">Search by name, code or location.</p>
+  </div>
+  <a class="btn btn--primary" href="{% url 'records:department_create' %}">+ New department</a>
+</section>
+
+<section class="panel">
+  <form method="get" class="search-bar">
+    <input type="search" name="q" value="{{ q }}" class="field" placeholder="Search departments…">
+    <button class="btn" type="submit">Search</button>
+    {% if q %}<a class="btn btn--ghost" href="{% url 'records:department_list' %}">Clear</a>{% endif %}
+  </form>
+
+  {% if departments %}
+  <table class="table">
+    <thead>
+      <tr><th>Name</th><th>Code</th><th>Location</th><th>Doctors</th><th class="col-actions">Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for dep in departments %}
+      <tr>
+        <td><a href="{% url 'records:department_detail' dep.pk %}">{{ dep.name }}</a></td>
+        <td><span class="badge">{{ dep.code }}</span></td>
+        <td>{{ dep.location|default:"—" }}</td>
+        <td>{{ dep.doctors.count }}</td>
+        <td class="col-actions">
+          <a class="btn btn--sm" href="{% url 'records:department_update' dep.pk %}">Edit</a>
+          <a class="btn btn--sm btn--danger" href="{% url 'records:department_delete' dep.pk %}" data-confirm="Delete {{ dep.name }}?">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% include "partials/_pagination.html" %}
+  {% else %}
+  <p class="empty">No departments found. <a href="{% url 'records:department_create' %}">Create one</a>.</p>
+  {% endif %}
+</section>
+{% endblock %}

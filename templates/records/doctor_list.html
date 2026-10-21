@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Doctors — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Doctors</h1>
+    <p class="muted">Search by name, specialty, email or department.</p>
+  </div>
+  <a class="btn btn--primary" href="{% url 'records:doctor_create' %}">+ New doctor</a>
+</section>
+
+<section class="panel">
+  <form method="get" class="search-bar">
+    <input type="search" name="q" value="{{ q }}" class="field" placeholder="Search doctors…">
+    <button class="btn" type="submit">Search</button>
+    {% if q %}<a class="btn btn--ghost" href="{% url 'records:doctor_list' %}">Clear</a>{% endif %}
+  </form>
+
+  {% if doctors %}
+  <table class="table">
+    <thead>
+      <tr><th>Name</th><th>Specialty</th><th>License</th><th>Department</th><th>Email</th><th class="col-actions">Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for d in doctors %}
+      <tr>
+        <td><a href="{% url 'records:doctor_detail' d.pk %}">{{ d.full_name }}</a></td>
+        <td>{{ d.specialty_label }}</td>
+        <td>{{ d.license_number }}</td>
+        <td>{% if d.department %}<a href="{% url 'records:department_detail' d.department.pk %}">{{ d.department.name }}</a>{% else %}—{% endif %}</td>
+        <td>{{ d.email }}</td>
+        <td class="col-actions">
+          <a class="btn btn--sm" href="{% url 'records:doctor_update' d.pk %}">Edit</a>
+          <a class="btn btn--sm btn--danger" href="{% url 'records:doctor_delete' d.pk %}" data-confirm="Delete Dr. {{ d.full_name }}?">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% include "partials/_pagination.html" %}
+  {% else %}
+  <p class="empty">No doctors found. <a href="{% url 'records:doctor_create' %}">Add one</a>.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load texttools_extras %}
+{% block title %}{{ department.name }} — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>{{ department.name }} <span class="badge">{{ department.code }}</span></h1>
+    <p class="muted">{{ department.location|default:"Location not set" }} · created {{ department.created_at|date:"d M Y" }}</p>
+  </div>
+  <div class="btn-row">
+    <a class="btn btn--primary" href="{% url 'records:department_update' department.pk %}">Edit</a>
+    <a class="btn btn--danger" href="{% url 'records:department_delete' department.pk %}">Delete</a>
+  </div>
+</section>
+
+<div class="grid-2">
+  <section class="panel">
+    <header class="panel-head"><h2>About</h2></header>
+    <p>{{ department.description|default:"No description yet."|smart_title }}</p>
+  </section>
+
+  <section class="panel">
+    <header class="panel-head">
+      <h2>Doctors ({{ doctors|length }})</h2>
+      <a href="{% url 'records:doctor_create' %}">+ Add</a>
+    </header>
+    {% if doctors %}
+    <ul class="link-list">
+      {% for d in doctors %}
+      <li><a href="{% url 'records:doctor_detail' d.pk %}">Dr. {{ d.full_name }}</a> <span class="muted">{{ d.specialty_label }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="empty">No doctors assigned yet.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

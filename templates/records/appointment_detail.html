@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Appointment — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>{{ appointment.reason }}</h1>
+    <p class="muted">
+      <span class="badge badge--{{ appointment.status }}">{{ appointment.get_status_display }}</span>
+      {% if appointment.is_upcoming %}<span class="badge badge--live">upcoming</span>{% endif %}
+    </p>
+  </div>
+  <div class="btn-row">
+    <a class="btn btn--primary" href="{% url 'records:appointment_update' appointment.pk %}">Edit</a>
+    <a class="btn btn--danger" href="{% url 'records:appointment_delete' appointment.pk %}">Delete</a>
+  </div>
+</section>
+
+<section class="panel">
+  <dl class="detail-grid detail-grid--wide">
+    <dt>Patient</dt><dd><a href="{% url 'records:patient_detail' appointment.patient.pk %}">{{ appointment.patient.full_name }}</a></dd>
+    <dt>Doctor</dt><dd><a href="{% url 'records:doctor_detail' appointment.doctor.pk %}">Dr. {{ appointment.doctor.full_name }}</a></dd>
+    <dt>Starts</dt><dd>{{ appointment.scheduled_at|date:"l, d M Y \a\t H:i" }}</dd>
+    <dt>Duration</dt><dd>{{ appointment.duration_minutes }} minutes (ends {{ appointment.ends_at|date:"H:i" }})</dd>
+    <dt>Reason</dt><dd>{{ appointment.reason }}</dd>
+    <dt>Notes</dt><dd>{{ appointment.notes|default:"—" }}</dd>
+    <dt>Created</dt><dd>{{ appointment.created_at|date:"d M Y, H:i" }}</dd>
+  </dl>
+</section>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load texttools_extras %}
+{% block title %}Dashboard — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-text">
+    <p class="hero-kicker">Overview</p>
+    <h1>Dashboard</h1>
+    <p class="hero-sub">Live numbers from every table in the database.</p>
+    <p class="hero-groups">
+      {% for g in user_groups %}<span class="chip chip--group">{{ g }}</span>{% endfor %}
+    </p>
+  </div>
+  {% if show_clinical or show_operations %}
+  <div class="btn-row hero-actions">
+    {% if show_clinical %}
+    <a class="btn btn--light" href="{% url 'records:patient_create' %}">+ New patient</a>
+    <a class="btn btn--outline-light" href="{% url 'records:appointment_create' %}">+ Book appointment</a>
+    {% endif %}
+    {% if show_operations %}
+    <a class="btn btn--light" href="{% url 'records:doctor_create' %}">+ New doctor</a>
+    <a class="btn btn--outline-light" href="{% url 'records:department_create' %}">+ New department</a>
+    {% endif %}
+  </div>
+  {% endif %}
+  <span class="hero-mark" aria-hidden="true">✚</span>
+</section>
+
+<section class="stat-grid">
+  {% if show_clinical %}
+  <a class="stat" href="{% url 'records:patient_list' %}">
+    <span class="stat-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c.5-3.2 2.7-5 5.5-5s5 1.8 5.5 5"/><circle cx="17.2" cy="9.5" r="2.3"/><path d="M16.4 15c2.2.3 3.6 1.8 4.1 4.5"/></svg></span>
+    <span class="stat-n">{{ patient_count }}</span><span class="stat-label">Patients</span>
+  </a>
+  {% endif %}
+  <a class="stat" href="{% url 'records:doctor_list' %}">
+    <span class="stat-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4.5"/><path d="M12 8.5v7M8.5 12h7"/></svg></span>
+    <span class="stat-n">{{ doctor_count }}</span><span class="stat-label">Doctors</span>
+  </a>
+  {% if show_operations %}
+  <a class="stat" href="{% url 'records:department_list' %}">
+    <span class="stat-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="1.5"/><path d="M9 8.5h1.5M13.5 8.5H15M9 12.5h1.5M13.5 12.5H15M10.5 20v-3.5h3V20"/></svg></span>
+    <span class="stat-n">{{ department_count }}</span><span class="stat-label">Departments</span>
+  </a>
+  {% endif %}
+  <a class="stat" href="{% url 'records:appointment_list' %}">
+    <span class="stat-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="14" rx="2.5"/><path d="M8 3.5v4M16 3.5v4M4 11h16"/></svg></span>
+    <span class="stat-n">{{ appointment_count }}</span><span class="stat-label">Appointments</span>
+  </a>
+  <div class="stat stat--accent">
+    <span class="stat-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 18v-7.5h11.5a4.5 4.5 0 0 1 4.5 4.5V18M3.5 18h17M3.5 14.2h11.5"/><circle cx="7" cy="10.8" r="1.9"/></svg></span>
+    <span class="stat-n">{{ admitted_count }}</span><span class="stat-label">Currently admitted</span>
+  </div>
+  <div class="stat stat--accent">
+    <span class="stat-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 1.8"/></svg></span>
+    <span class="stat-n">{{ appointments_today }}</span><span class="stat-label">Visits today</span>
+  </div>
+</section>
+
+<div class="grid-2 grid-2--split">
+  <section class="panel">
+    <header class="panel-head">
+      <h2>Upcoming appointments</h2>
+      <a href="{% url 'records:appointment_list' %}">View all</a>
+    </header>
+    {% if upcoming %}
+    <table class="table">
+      <thead><tr><th>When</th><th>Patient</th><th>Doctor</th><th>Reason</th></tr></thead>
+      <tbody>
+        {% for a in upcoming %}
+        <tr>
+          <td><a href="{% url 'records:appointment_detail' a.pk %}">{{ a.scheduled_at|date:"D d M, H:i" }}</a></td>
+          <td>{{ a.patient.full_name }}</td>
+          <td>Dr. {{ a.doctor.last_name }}</td>
+          <td>{{ a.reason|snippet:40 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="empty">No upcoming appointments. <a href="{% url 'records:appointment_create' %}">Book one</a>.</p>{% endif %}
+  </section>
+
+  <section class="panel panel--dark">
+    <header class="panel-head">
+      <h2>Insights <small class="badge">texttools</small></h2>
+    </header>
+    <ul class="insight-list">
+      {% for item in insights %}
+      <li><span class="insight-label">{{ item.label }}</span><span class="insight-value">{{ item.value }}</span></li>
+      {% empty %}
+      <li class="empty">Add some appointments and notes to see insights.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+
+{% if show_clinical %}
+<section class="panel">
+  <header class="panel-head">
+    <h2>Recently registered patients</h2>
+    <a href="{% url 'records:patient_list' %}">View all</a>
+  </header>
+  {% if recent_patients %}
+  <div class="card-row">
+    {% for p in recent_patients %}
+    <a class="mini-card" href="{% url 'records:patient_detail' p.pk %}">
+      <span class="avatar">{{ p.initials }}</span>
+      <span class="mini-card-body">
+        <strong>{{ p.full_name }}</strong>
+        <small class="muted">{{ p.age }} yrs · {{ p.blood_group|default:"—" }} · {{ p.get_gender_display }}</small>
+        {% if p.last_name|is_palindrome %}<span class="badge badge--fun">palindrome surname</span>{% endif %}
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}<p class="empty">No patients yet. <a href="{% url 'records:patient_create' %}">Register the first one</a>.</p>{% endif %}
+</section>
+{% endif %}
+{% endblock %}

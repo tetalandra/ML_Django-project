@@ -1,0 +1,11 @@
+<section class="panel panel--narrow">
+  <h1>Delete {{ object }}?</h1>
+  <p class="muted">This will permanently remove <strong>{{ object }}</strong>. Related records pointing at it may also be affected.</p>
+  <form method="post" data-confirm-submit data-confirm="Really delete {{ object }}? This cannot be undone.">
+    {% csrf_token %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn--danger">Yes, delete</button>
+      <a href="{{ object.get_absolute_url }}" class="btn btn--ghost">Cancel</a>
+    </div>
+  </form>
+</section>
