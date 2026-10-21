@@ -1,0 +1,7 @@
+# Install with:  pip install -r requirements.txt
+Django>=6.0,<7.0
+
+# Our own package lives one directory up (../texttools) and is installed with:
+#   pip install -e ../texttools
+# ...or from the built wheel:
+#   pip install ../texttools/dist/texttools-1.0.0-py3-none-any.whl

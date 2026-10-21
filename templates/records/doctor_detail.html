@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ doctor.full_name }} — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Dr. {{ doctor.full_name }}</h1>
+    <p class="muted">{{ doctor.specialty_label }} · license {{ doctor.license_number }}{% if doctor.department %} · <a href="{% url 'records:department_detail' doctor.department.pk %}">{{ doctor.department.name }}</a>{% endif %}</p>
+  </div>
+  <div class="btn-row">
+    <a class="btn btn--primary" href="{% url 'records:doctor_update' doctor.pk %}">Edit</a>
+    <a class="btn btn--danger" href="{% url 'records:doctor_delete' doctor.pk %}">Delete</a>
+  </div>
+</section>
+
+<div class="grid-2">
+  <section class="panel">
+    <header class="panel-head"><h2>Contact</h2></header>
+    <dl class="detail-grid">
+      <dt>Email</dt><dd>{{ doctor.email }}</dd>
+      <dt>Phone</dt><dd>{{ doctor.phone|default:"—" }}</dd>
+      <dt>Address</dt><dd>{{ doctor.address|default:"—" }}</dd>
+      <dt>Department</dt><dd>{{ doctor.department|default:"Unassigned" }}</dd>
+      <dt>Member since</dt><dd>{{ doctor.created_at|date:"d M Y" }}</dd>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <header class="panel-head"><h2>Schedule</h2></header>
+    {% if appointments %}
+    <table class="table">
+      <thead><tr><th>When</th><th>Patient</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for a in appointments %}
+        <tr>
+          <td><a href="{% url 'records:appointment_detail' a.pk %}">{{ a.scheduled_at|date:"D d M, H:i" }}</a></td>
+          <td>{{ a.patient.full_name }}</td>
+          <td><span class="badge badge--{{ a.status }}">{{ a.get_status_display }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="empty">Nothing scheduled. <a href="{% url 'records:appointment_create' %}">Book an appointment</a>.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}
